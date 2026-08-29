@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.respect.app.RespectLogicTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-08-29T18:59:18.358Z" hostname="codespaces-7872d8" time="0.034">
+  <properties/>
+  <testcase name="testInvalidCommitmentTitleIsRejected" classname="com.respect.app.RespectLogicTest" time="0.006"/>
+  <testcase name="testWeekdayScheduling" classname="com.respect.app.RespectLogicTest" time="0.001"/>
+  <testcase name="testScoreUsesScheduledCommitmentsOnly" classname="com.respect.app.RespectLogicTest" time="0.009"/>
+  <testcase name="testEmptyDataProducesZero" classname="com.respect.app.RespectLogicTest" time="0.003"/>
+  <testcase name="testRecoveryDayDoesNotBreakStreak" classname="com.respect.app.RespectLogicTest" time="0.005"/>
+  <testcase name="testInvalidNegativePointsAreRejected" classname="com.respect.app.RespectLogicTest" time="0.0"/>
+  <testcase name="testRecoveryDayIsStoredAndRecognized" classname="com.respect.app.RespectLogicTest" time="0.0"/>
+  <testcase name="testStrongDayThresholdUsesConfiguredValue" classname="com.respect.app.RespectLogicTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

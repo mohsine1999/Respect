@@ -1,0 +1,44 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.respect.app"
+4    android:versionCode="1"
+5    android:versionName="0.2.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="23"
+9        android:targetSdkVersion="36" />
+10
+11    <application
+11-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:2:5-13:19
+12        android:allowBackup="true"
+12-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:5:9-35
+13        android:debuggable="true"
+14        android:extractNativeLibs="false"
+15        android:label="Respect"
+15-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:4:9-32
+16        android:supportsRtl="true"
+16-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:6:9-35
+17        android:theme="@style/AppTheme" >
+17-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:3:9-40
+18        <activity
+18-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:7:9-12:20
+19            android:name="com.respect.app.MainActivity"
+19-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:7:19-47
+20            android:exported="true"
+20-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:7:85-108
+21            android:screenOrientation="portrait" >
+21-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:7:48-84
+22            <intent-filter>
+22-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:8:13-11:29
+23                <action android:name="android.intent.action.MAIN" />
+23-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:9:17-68
+23-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:9:25-66
+24
+25                <category android:name="android.intent.category.LAUNCHER" />
+25-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:10:17-76
+25-->/workspaces/Respect/respect-android/app/src/main/AndroidManifest.xml:10:27-74
+26            </intent-filter>
+27        </activity>
+28    </application>
+29
+30</manifest>

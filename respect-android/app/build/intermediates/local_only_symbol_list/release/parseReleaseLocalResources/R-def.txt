@@ -1,0 +1,21 @@
+R_DEF: Internal format may change without notice
+local
+color accent
+color accentSoft
+color background
+color bg
+color danger
+color divider
+color success
+color surface
+color surface2
+color surfaceElevated
+color textMuted
+color textPrimary
+color textSecondary
+color warning
+drawable bg_button
+drawable bg_card
+drawable bg_secondary_button
+string app_name
+style AppTheme

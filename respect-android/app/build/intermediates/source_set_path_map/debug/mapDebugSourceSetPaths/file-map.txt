@@ -1,0 +1,8 @@
+com.respect.app-pngs-0 /workspaces/Respect/respect-android/app/build/generated/res/pngs/debug
+com.respect.app-resValues-1 /workspaces/Respect/respect-android/app/build/generated/res/resValues/debug
+com.respect.app-updated_navigation_xml-2 /workspaces/Respect/respect-android/app/build/generated/updated_navigation_xml/debug
+com.respect.app-packageDebugResources-3 /workspaces/Respect/respect-android/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
+com.respect.app-packageDebugResources-4 /workspaces/Respect/respect-android/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
+com.respect.app-debug-5 /workspaces/Respect/respect-android/app/build/intermediates/merged_res/debug/mergeDebugResources
+com.respect.app-debug-6 /workspaces/Respect/respect-android/app/src/debug/res
+com.respect.app-main-7 /workspaces/Respect/respect-android/app/src/main/res

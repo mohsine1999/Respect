@@ -140,15 +140,15 @@ public class MainActivity extends Activity {
     void buildShell() {
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(Color.rgb(11, 16, 32));
+        root.setBackgroundColor(Color.rgb(245, 241, 234));
         root.setPadding(dp(18), dp(16), dp(18), dp(8));
         setContentView(root);
 
         LinearLayout header = new LinearLayout(this);
         header.setGravity(Gravity.CENTER_VERTICAL);
-        TextView title = tv("Respect", 28, Color.rgb(245, 247, 255), true);
+        TextView title = tv("Respect", 28, Color.rgb(30, 27, 23), true);
         header.addView(title, new LinearLayout.LayoutParams(0, dp(40), 1));
-        streakText = tv("", 14, Color.rgb(157, 168, 195), true);
+        streakText = tv("", 14, Color.rgb(91, 82, 76), true);
         header.addView(streakText);
         root.addView(header);
 
@@ -156,7 +156,7 @@ public class MainActivity extends Activity {
         nav.setOrientation(LinearLayout.HORIZONTAL);
         nav.setGravity(Gravity.CENTER);
         nav.setPadding(0, dp(8), 0, dp(8));
-        nav.setBackgroundColor(Color.rgb(11, 16, 32));
+        nav.setBackgroundColor(Color.argb(0, 0, 0, 0));
 
         Button todayBtn = navBtn("Today");
         Button planBtn = navBtn("Plan");
@@ -189,7 +189,7 @@ public class MainActivity extends Activity {
         b.setText(s);
         b.setTextSize(12);
         b.setAllCaps(false);
-        b.setTextColor(Color.rgb(245, 247, 255));
+        b.setTextColor(Color.rgb(30, 27, 23));
         b.setBackgroundColor(Color.TRANSPARENT);
         return b;
     }
@@ -200,7 +200,7 @@ public class MainActivity extends Activity {
         b.setTextSize(14);
         b.setAllCaps(false);
         b.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        b.setTextColor(primary ? Color.rgb(11, 16, 32) : Color.rgb(245, 247, 255));
+        b.setTextColor(primary ? Color.rgb(255, 255, 255) : Color.rgb(30, 27, 23));
         b.setBackgroundResource(primary ? R.drawable.bg_button : R.drawable.bg_secondary_button);
         return b;
     }
@@ -225,40 +225,78 @@ public class MainActivity extends Activity {
         content.removeAllViews();
         streakText.setText(streak() + " day streak");
 
-        TextView date = tv(humanDate(new Date()), 14, Color.rgb(157, 168, 195), false);
+        TextView date = tv(humanDate(new Date()), 14, Color.rgb(91, 82, 76), false);
         content.addView(date);
-        addGap(10);
+        addGap(12);
 
         LinearLayout hero = card();
-        scoreText = tv(score(today) + "%", 42, Color.rgb(142, 167, 255), true);
-        hero.addView(scoreText);
+        hero.setPadding(dp(18), dp(18), dp(18), dp(18));
+        LinearLayout summaryRow = new LinearLayout(this);
+        summaryRow.setGravity(Gravity.CENTER_VERTICAL);
+        summaryRow.setOrientation(LinearLayout.HORIZONTAL);
 
-        TextView label = tv("Today’s respect score", 15, Color.rgb(245, 247, 255), true);
-        label.setPadding(0, dp(4), 0, dp(8));
-        hero.addView(label);
+        scoreText = tv(score(today) + "%", 42, Color.rgb(30, 27, 23), true);
+        summaryRow.addView(scoreText, new LinearLayout.LayoutParams(0, -2, 1));
 
-        TextView msg = tv(message(score(today)), 14, Color.rgb(157, 168, 195), false);
-        hero.addView(msg);
+        LinearLayout statusCol = new LinearLayout(this);
+        statusCol.setOrientation(LinearLayout.VERTICAL);
+        TextView headline = tv("Respect today", 13, Color.rgb(91, 82, 76), true);
+        TextView status = tv(message(score(today)), 18, Color.rgb(30, 27, 23), true);
+        statusCol.addView(headline);
+        statusCol.addView(status);
+        summaryRow.addView(statusCol);
+        hero.addView(summaryRow);
 
         addGap(12);
-        section("Daily commitments");
+        TextView progressLabel = tv("Progress", 12, Color.rgb(91, 82, 76), true);
+        hero.addView(progressLabel);
+        LinearLayout progressBar = new LinearLayout(this);
+        progressBar.setBackgroundColor(Color.rgb(231, 224, 216));
+        progressBar.setPadding(0, 0, 0, 0);
+        int possible = possiblePointsToday();
+        int current = score(today);
+        int width = possible > 0 ? Math.min(100, (current * 100) / possible) : 0;
+        TextView progressFill = tv(" ", 1, Color.rgb(92, 107, 143), false);
+        progressFill.setBackgroundColor(Color.rgb(92, 107, 143));
+        progressBar.addView(progressFill, new LinearLayout.LayoutParams(0, dp(10), width));
+        progressBar.addView(new Space(this), new LinearLayout.LayoutParams(0, dp(10), 100 - width));
+        hero.addView(progressBar, new LinearLayout.LayoutParams(-1, dp(10)));
 
+        TextView detail = tv((possible > 0 ? (possible - current) + " points left" : "Nothing scheduled today"), 13, Color.rgb(91, 82, 76), false);
+        detail.setPadding(0, dp(8), 0, 0);
+        hero.addView(detail);
+
+        addGap(16);
+        section("Today");
+
+        int shown = 0;
         for (String key : HABITS) {
             if (isHabitEnabled(key)) {
                 addHabit(key, habitLabel(key), getHabitPoints(key));
+                shown++;
             }
         }
 
-        if (score(today) == 0) {
+        if (shown == 0) {
             addGap(8);
-            TextView nudge = tv("Start small. One honest action beats a perfect plan.", 14, Color.rgb(88, 214, 162), false);
+            TextView nudge = tv("Nothing is scheduled yet. Use Plan to build your week.", 14, Color.rgb(91, 82, 76), false);
             content.addView(nudge);
         }
 
-        addGap(10);
-        Button review = button("Write today’s reflection", false);
+        addGap(12);
+        Button review = button("Write reflection", false);
         review.setOnClickListener(v -> reflectionDialog());
-        content.addView(review, new LinearLayout.LayoutParams(-1, dp(50)));
+        content.addView(review, new LinearLayout.LayoutParams(-1, dp(48)));
+    }
+
+    int possiblePointsToday() {
+        int possible = 0;
+        for (String key : HABITS) {
+            if (isHabitEnabled(key)) {
+                possible += getHabitPoints(key);
+            }
+        }
+        return possible;
     }
 
     String habitLabel(String key) {
@@ -283,26 +321,32 @@ public class MainActivity extends Activity {
 
     void addHabit(String key, String label, int pts) {
         LinearLayout c = card();
+        c.setPadding(dp(14), dp(12), dp(14), dp(12));
         LinearLayout row = new LinearLayout(this);
         row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setMinimumHeight(dp(56));
 
         CheckBox cb = new CheckBox(this);
         cb.setChecked(get(today, key));
-        cb.setButtonTintList(android.content.res.ColorStateList.valueOf(Color.rgb(142, 167, 255)));
-        row.addView(cb, new LinearLayout.LayoutParams(dp(52), dp(52)));
+        cb.setButtonTintList(android.content.res.ColorStateList.valueOf(Color.rgb(92, 107, 143)));
+        row.addView(cb, new LinearLayout.LayoutParams(dp(42), dp(42)));
 
         LinearLayout tx = new LinearLayout(this);
         tx.setOrientation(LinearLayout.VERTICAL);
-        TextView a = tv(label, 15, Color.rgb(245, 247, 255), true);
-        TextView p = tv("+" + pts + " points", 12, Color.rgb(157, 168, 195), false);
+        TextView a = tv(label, 16, Color.rgb(30, 27, 23), true);
+        TextView p = tv("+" + pts + " points", 12, Color.rgb(91, 82, 76), false);
         tx.addView(a);
         tx.addView(p);
         row.addView(tx, new LinearLayout.LayoutParams(0, -2, 1));
+
+        TextView value = tv(get(today, key) ? "Done" : "Open", 12, get(today, key) ? Color.rgb(79, 140, 119) : Color.rgb(91, 82, 76), true);
+        row.addView(value, new LinearLayout.LayoutParams(-2, -2));
 
         c.addView(row);
         cb.setOnCheckedChangeListener((v, is) -> {
             set(today, key, is);
             refreshToday();
+            showToday();
         });
     }
 
