@@ -1,29 +1,34 @@
 {
   "expo": {
-    "name": "respect-app",
-    "slug": "respect-app",
+    "name": "Respect",
+    "slug": "respect",
+    "description": "A private operating system for keeping your own word.",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "scheme": "respect",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#F5F3EE",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.respectapp"
+      "bundleIdentifier": "com.respect.app"
     },
     "android": {
+      "package": "com.respect.app",
+      "versionCode": 2,
+      "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#F5F3EE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.respectapp"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-system-ui",
       "expo-status-bar"
     ]
   }

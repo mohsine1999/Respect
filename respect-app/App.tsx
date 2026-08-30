@@ -1,35 +1,48 @@
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { TamaguiProvider, Theme } from 'tamagui';
+import { PortalProvider } from '@tamagui/portal';
+import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Spinner, styled, TamaguiProvider, Text, Theme, YStack } from 'tamagui';
 import config from './tamagui.config';
-import { TodayScreen } from './src/screens/TodayScreen';
-import { PlanScreen } from './src/screens/PlanScreen';
-import { HistoryScreen } from './src/screens/HistoryScreen';
-import { DashboardScreen } from './src/screens/DashboardScreen';
-import { SettingsScreen } from './src/screens/SettingsScreen';
+import { RespectProvider, useRespect } from './src/data/RespectProvider';
+import { AppNavigator } from './src/navigation/AppNavigator';
 
-const Stack = createNativeStackNavigator();
+const GestureRoot = styled(GestureHandlerRootView, { flex: 1 });
+
+function RespectApplication() {
+  const { state, hydrated } = useRespect();
+  return (
+    <Theme name={state.settings.theme}>
+      <StatusBar style={state.settings.theme === 'dark' ? 'light' : 'dark'} />
+      {hydrated ? (
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
+      ) : (
+        <YStack f={1} ai="center" jc="center" gap="$md" bg="$background">
+          <Spinner color="$accent" />
+          <Text fontSize="$label" color="$textMuted">
+            Loading Respect
+          </Text>
+        </YStack>
+      )}
+    </Theme>
+  );
+}
 
 export default function App() {
   return (
     <TamaguiProvider config={config} defaultTheme="light">
-      <Theme name="light">
-        <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName="Today"
-            screenOptions={{
-              headerShown: false,
-              animation: 'slide_from_right',
-            }}
-          >
-            <Stack.Screen name="Today" component={TodayScreen} />
-            <Stack.Screen name="Plan" component={PlanScreen} />
-            <Stack.Screen name="History" component={HistoryScreen} />
-            <Stack.Screen name="Dashboard" component={DashboardScreen} />
-            <Stack.Screen name="Settings" component={SettingsScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </Theme>
+      <GestureRoot>
+        <SafeAreaProvider>
+          <PortalProvider shouldAddRootHost>
+            <RespectProvider>
+              <RespectApplication />
+            </RespectProvider>
+          </PortalProvider>
+        </SafeAreaProvider>
+      </GestureRoot>
     </TamaguiProvider>
   );
 }

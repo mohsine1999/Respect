@@ -1,32 +1,208 @@
-import { YStack, XStack, Text, Button, Theme } from 'tamagui';
-import { DEFAULT_COMMITMENTS } from '../domain/commitments';
+import { useState } from 'react';
+import { Alert } from 'react-native';
+import { Plus } from '@tamagui/lucide-icons';
+import { Text, XStack, YStack } from 'tamagui';
+import {
+  Chip,
+  CommitmentList,
+  EmptyState,
+  FormField,
+  IconButton,
+  ModalSheet,
+  PrimaryButton,
+  RespectScreen,
+  ScreenHeader,
+  SectionHeader,
+  SecondaryButton,
+} from '../components';
+import { useRespect } from '../data/RespectProvider';
+import type { Commitment } from '../domain/types';
+import { WEEKDAY_NAMES } from '../utils/dates';
+
+type Draft = Pick<Commitment, 'title' | 'description' | 'points' | 'category' | 'minimumTarget' | 'weekdays' | 'enabled' | 'required'>;
+
+const blankDraft = (): Draft => ({
+  title: '',
+  description: '',
+  points: 10,
+  category: '',
+  minimumTarget: '',
+  weekdays: Array.from({ length: 7 }, () => true),
+  enabled: true,
+  required: true,
+});
+
+function toDraft(commitment: Commitment): Draft {
+  return {
+    title: commitment.title,
+    description: commitment.description,
+    points: commitment.points,
+    category: commitment.category,
+    minimumTarget: commitment.minimumTarget,
+    weekdays: [...commitment.weekdays],
+    enabled: commitment.enabled,
+    required: commitment.required,
+  };
+}
 
 export function PlanScreen() {
+  const { state, addCommitment, saveCommitment, deleteCommitment } = useRespect();
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Commitment | null>(null);
+  const [draft, setDraft] = useState<Draft>(blankDraft);
+
+  const beginAdd = () => {
+    setEditing(null);
+    setDraft(blankDraft());
+    setOpen(true);
+  };
+
+  const beginEdit = (commitment: Commitment) => {
+    setEditing(commitment);
+    setDraft(toDraft(commitment));
+    setOpen(true);
+  };
+
+  const save = () => {
+    if (!draft.title.trim() || !draft.weekdays.some(Boolean)) return;
+    if (editing) saveCommitment({ ...editing, ...draft });
+    else addCommitment(draft);
+    setOpen(false);
+  };
+
+  const confirmDelete = () => {
+    if (!editing) return;
+    Alert.alert('Delete commitment?', 'Past days keep their historical snapshot.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          deleteCommitment(editing.id);
+          setOpen(false);
+        },
+      },
+    ]);
+  };
+
+  const setWeekday = (index: number) => {
+    setDraft((current) => ({
+      ...current,
+      weekdays: current.weekdays.map((enabled, dayIndex) => (dayIndex === index ? !enabled : enabled)),
+    }));
+  };
+
   return (
-    <Theme name="light">
-      <YStack flex={1} backgroundColor="$background" paddingHorizontal="$lg" paddingTop="$3xl" gap="$lg">
-        <Text fontSize={28} fontWeight="600" color="$color">Plan</Text>
+    <RespectScreen>
+      <ScreenHeader
+        eyebrow="This is your operating standard"
+        title="My plan"
+        action={<IconButton label="Add commitment" icon={<Plus size={20} color="$accent" />} onPress={beginAdd} />}
+      />
 
-        {DEFAULT_COMMITMENTS.map((commitment) => (
-          <YStack key={commitment.id} backgroundColor="$surface" borderRadius="$md" borderWidth={1} borderColor="$border" padding="$md" gap="$sm">
-            <XStack justifyContent="space-between" alignItems="center">
-              <Text fontSize={18} fontWeight="600" color="$color">{commitment.title}</Text>
-              <Button backgroundColor="$accentSoft" borderRadius="$sm">
-                <Button.Text color="$accent">Edit</Button.Text>
-              </Button>
-            </XStack>
+      <Text fontSize="$body" color="$textSecondary">
+        Keep it exact and believable. Changes apply forward; completed days remain intact.
+      </Text>
 
-            <Text fontSize={12} color="$colorMuted">{commitment.minimumTarget}</Text>
-            <Text fontSize={12} color="$colorMuted">
-              {commitment.weekdays.filter(Boolean).length} active days • {commitment.points} points
-            </Text>
-          </YStack>
-        ))}
-
-        <Button theme="accent" backgroundColor="$accent" borderRadius="$md" height={48}>
-          <Button.Text color="$color">Add commitment</Button.Text>
-        </Button>
+      <YStack gap="$sm">
+        <SectionHeader
+          title="Commitments"
+          detail={`${state.commitments.filter((commitment) => commitment.enabled).length} active`}
+        />
+        {state.commitments.length ? (
+          <CommitmentList
+            commitments={state.commitments}
+            mode="plan"
+            onPress={(commitment) => beginEdit(commitment as Commitment)}
+          />
+        ) : (
+          <EmptyState
+            title="Build your plan"
+            detail="Add the few commitments that define a good day."
+            action={<PrimaryButton onPress={beginAdd}>Add commitment</PrimaryButton>}
+          />
+        )}
       </YStack>
-    </Theme>
+
+      {state.commitments.length ? <PrimaryButton onPress={beginAdd}>Add commitment</PrimaryButton> : null}
+
+      <ModalSheet open={open} onOpenChange={setOpen} title={editing ? 'Edit commitment' : 'New commitment'}>
+        <YStack gap="$xl" pb="$4xl">
+          <FormField
+            label="Name"
+            value={draft.title}
+            onChangeText={(title) => setDraft((current) => ({ ...current, title }))}
+            placeholder="Movement"
+          />
+          <FormField
+            label="Target"
+            value={draft.description}
+            onChangeText={(description) => setDraft((current) => ({ ...current, description }))}
+            placeholder="20+ minutes"
+          />
+          <XStack gap="$md">
+            <YStack f={1}>
+              <FormField
+                label="Points"
+                value={String(draft.points)}
+                onChangeText={(points) =>
+                  setDraft((current) => ({ ...current, points: Math.max(0, Number(points.replace(/\D/g, '')) || 0) }))
+                }
+                keyboardType="number-pad"
+              />
+            </YStack>
+            <YStack f={1}>
+              <FormField
+                label="Category"
+                value={draft.category}
+                onChangeText={(category) => setDraft((current) => ({ ...current, category }))}
+                placeholder="Health"
+              />
+            </YStack>
+          </XStack>
+          <FormField
+            label="Minimum version"
+            value={draft.minimumTarget}
+            onChangeText={(minimumTarget) => setDraft((current) => ({ ...current, minimumTarget }))}
+            placeholder="A 5 minute walk"
+            hint="The honest smallest version for minimum days."
+          />
+
+          <YStack gap="$sm">
+            <Text fontSize="$label" fw="$medium" color="$textSecondary">
+              Schedule
+            </Text>
+            <XStack flexWrap="wrap" gap="$sm">
+              {WEEKDAY_NAMES.map((day, index) => (
+                <Chip key={day} label={day} selected={draft.weekdays[index]} onPress={() => setWeekday(index)} />
+              ))}
+            </XStack>
+          </YStack>
+
+          <YStack gap="$sm">
+            <Text fontSize="$label" fw="$medium" color="$textSecondary">
+              Status
+            </Text>
+            <XStack gap="$sm">
+              <Chip
+                label={draft.enabled ? 'Active' : 'Paused'}
+                selected={draft.enabled}
+                onPress={() => setDraft((current) => ({ ...current, enabled: !current.enabled }))}
+              />
+              <Chip
+                label={draft.required ? 'Required' : 'Optional'}
+                selected={draft.required}
+                onPress={() => setDraft((current) => ({ ...current, required: !current.required }))}
+              />
+            </XStack>
+          </YStack>
+
+          <PrimaryButton disabled={!draft.title.trim() || !draft.weekdays.some(Boolean)} onPress={save}>
+            {editing ? 'Save changes' : 'Add to plan'}
+          </PrimaryButton>
+          {editing ? <SecondaryButton onPress={confirmDelete}>Delete commitment</SecondaryButton> : null}
+        </YStack>
+      </ModalSheet>
+    </RespectScreen>
   );
 }
