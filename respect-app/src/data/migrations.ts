@@ -1,19 +1,35 @@
 import { createCommitment, createDefaultCommitments } from '../domain/commitments';
-import { captureSchedule, toSnapshot } from '../domain/scheduling';
-import type { Commitment, DayRecord, PersistedRespectState, RespectSettings } from '../domain/types';
+import { captureSchedule } from '../domain/scheduling';
+import type {
+  Commitment,
+  CommitmentSnapshot,
+  DayRecord,
+  PersistedRespectState,
+  RespectProfile,
+  RespectSettings,
+} from '../domain/types';
 import { fromDateKey } from '../utils/dates';
 
 export const defaultSettings: RespectSettings = {
   strongDayThreshold: 70,
-  theme: 'light',
+  theme: 'system',
   notifications: false,
   minimumDayEnabled: true,
 };
 
+export const defaultProfile: RespectProfile = {
+  displayName: '',
+  onboardingCompleted: false,
+  onboardingVersion: 1,
+  planCoachmarkSeen: false,
+  gettingStartedDismissed: false,
+};
+
 export function createDefaultState(): PersistedRespectState {
   return {
-    version: 2,
-    commitments: createDefaultCommitments(),
+    version: 3,
+    profile: { ...defaultProfile },
+    commitments: [],
     records: {},
     settings: { ...defaultSettings },
   };
@@ -29,6 +45,7 @@ function migrateCommitments(value: unknown): Commitment[] {
     const raw = object(entry);
     return createCommitment({
       id: typeof raw.id === 'string' ? raw.id : `legacy-${index}`,
+      kind: raw.kind === 'reflection' || raw.id === 'reflection' ? 'reflection' : 'standard',
       title: typeof raw.title === 'string' ? raw.title : `Commitment ${index + 1}`,
       description: typeof raw.description === 'string' ? raw.description : '',
       points: typeof raw.points === 'number' ? raw.points : 0,
@@ -44,7 +61,7 @@ function migrateCommitments(value: unknown): Commitment[] {
       updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : undefined,
     });
   });
-  return migrated.length ? migrated : createDefaultCommitments();
+  return migrated;
 }
 
 function migrateRecords(value: unknown, commitments: Commitment[]): Record<string, DayRecord> {
@@ -55,12 +72,10 @@ function migrateRecords(value: unknown, commitments: Commitment[]): Record<strin
       const completions = Object.fromEntries(
         Object.entries(object(raw.completions)).map(([id, completed]) => [id, Boolean(completed)]),
       );
-      const legacyIds = Array.isArray(raw.scheduledCommitmentIds)
-        ? raw.scheduledCommitmentIds.filter((id): id is string => typeof id === 'string')
-        : [];
-      const providedSnapshots = Array.isArray(raw.scheduledCommitments)
+      const providedSnapshots: CommitmentSnapshot[] | undefined = Array.isArray(raw.scheduledCommitments)
         ? raw.scheduledCommitments.map(object).map((snapshot) => ({
             id: String(snapshot.id ?? ''),
+            kind: snapshot.kind === 'reflection' || snapshot.id === 'reflection' ? 'reflection' : 'standard',
             title: String(snapshot.title ?? ''),
             description: String(snapshot.description ?? ''),
             points: Number(snapshot.points ?? 0),
@@ -69,12 +84,9 @@ function migrateRecords(value: unknown, commitments: Commitment[]): Record<strin
             minimumTarget: String(snapshot.minimumTarget ?? ''),
           }))
         : undefined;
-      const legacySnapshots = legacyIds.length
-        ? legacyIds.flatMap((id) => {
-            const commitment = commitments.find((candidate) => candidate.id === id);
-            return commitment ? [toSnapshot(commitment)] : [];
-          })
-        : captureSchedule(commitments, fromDateKey(date));
+      // v1's scheduledCommitmentIds contained only completed IDs, not the full plan.
+      // Rebuild the applicable schedule when an immutable v2+ snapshot is unavailable.
+      const legacySnapshots = captureSchedule(commitments, fromDateKey(date));
       return [
         date,
         {
@@ -94,14 +106,26 @@ export function migratePersistedState(value: unknown): PersistedRespectState {
   const raw = object(value);
   const commitments = migrateCommitments(raw.commitments);
   const rawSettings = object(raw.settings);
+  const rawProfile = object(raw.profile);
+  const isExistingV3User = raw.version === 3;
   return {
-    version: 2,
+    version: 3,
+    profile: {
+      displayName: typeof rawProfile.displayName === 'string' ? rawProfile.displayName : '',
+      onboardingCompleted: isExistingV3User ? rawProfile.onboardingCompleted === true : true,
+      onboardingVersion:
+        typeof rawProfile.onboardingVersion === 'number' ? rawProfile.onboardingVersion : defaultProfile.onboardingVersion,
+      onboardingCompletedAt:
+        typeof rawProfile.onboardingCompletedAt === 'string' ? rawProfile.onboardingCompletedAt : undefined,
+      planCoachmarkSeen: isExistingV3User ? rawProfile.planCoachmarkSeen === true : false,
+      gettingStartedDismissed: isExistingV3User ? rawProfile.gettingStartedDismissed === true : true,
+    },
     commitments,
     records: migrateRecords(raw.records, commitments),
     settings: {
       strongDayThreshold:
         typeof rawSettings.strongDayThreshold === 'number' ? rawSettings.strongDayThreshold : defaultSettings.strongDayThreshold,
-      theme: rawSettings.theme === 'dark' ? 'dark' : 'light',
+      theme: rawSettings.theme === 'dark' || rawSettings.theme === 'light' ? rawSettings.theme : 'system',
       notifications:
         typeof rawSettings.notifications === 'boolean' ? rawSettings.notifications : defaultSettings.notifications,
       minimumDayEnabled:

@@ -1,1 +1,1 @@
-export type TabName = 'Today' | 'Plan' | 'History' | 'Dashboard' | 'Settings';
+export type TabName = 'Today' | 'Progress' | 'Plan';

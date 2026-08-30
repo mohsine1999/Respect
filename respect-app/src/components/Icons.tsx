@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react';
-import Svg, { Circle as SvgCircle, Line, Path, Rect } from 'react-native-svg';
+import Svg, { Circle as SvgCircle, Line, Path } from 'react-native-svg';
 import { useTheme } from 'tamagui';
 
 export type IconProps = {
@@ -47,14 +47,27 @@ export function ChevronRightIcon(props: IconProps) {
   );
 }
 
-export function CalendarIcon(props: IconProps) {
+export function ArrowLeftIcon(props: IconProps) {
   return (
     <IconFrame {...props}>
-      <Path d="M8 2v4" />
-      <Path d="M16 2v4" />
-      <Rect width={18} height={18} x={3} y={4} rx={2} />
-      <Path d="M3 10h18" />
-      <Path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" />
+      <Path d="m15 18-6-6 6-6" />
+    </IconFrame>
+  );
+}
+
+export function XIcon(props: IconProps) {
+  return (
+    <IconFrame {...props}>
+      <Path d="M18 6 6 18M6 6l12 12" />
+    </IconFrame>
+  );
+}
+
+export function SlidersIcon(props: IconProps) {
+  return (
+    <IconFrame {...props}>
+      <Path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3" />
+      <Path d="M1 14h6M9 8h6M17 16h6" />
     </IconFrame>
   );
 }

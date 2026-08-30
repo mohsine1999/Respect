@@ -1,11 +1,23 @@
 import type { ReactNode } from 'react';
 import { ScrollView, Text, View, XStack, YStack } from 'tamagui';
+import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function RespectScreen({ children, scroll = true }: { children: ReactNode; scroll?: boolean }) {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const horizontalPadding = width < 380 ? 16 : width >= 768 ? 32 : 20;
   const content = (
-    <YStack px="$lg" pt="$lg" pb="$5xl" gap="$xl" minHeight="100%">
+    <YStack
+      width="100%"
+      maxWidth={720}
+      alignSelf="center"
+      px={horizontalPadding}
+      pt="$lg"
+      pb="$5xl"
+      gap="$2xl"
+      minHeight="100%"
+    >
       {children}
     </YStack>
   );
@@ -20,14 +32,17 @@ export function RespectScreen({ children, scroll = true }: { children: ReactNode
 export function ScreenHeader({
   title,
   eyebrow,
+  leading,
   action,
 }: {
   title: string;
   eyebrow?: string;
+  leading?: ReactNode;
   action?: ReactNode;
 }) {
   return (
     <XStack ai="flex-start" jc="space-between" gap="$lg">
+      {leading}
       <YStack f={1} gap="$xs">
         {eyebrow ? (
           <Text fontSize="$caption" color="$textMuted">
@@ -50,8 +65,7 @@ export function SectionHeader({ title, detail }: { title: string; detail?: strin
         fontSize="$sectionTitle"
         lineHeight="$sectionTitle"
         fw="$semibold"
-        letterSpacing={1.2}
-        textTransform="uppercase"
+        letterSpacing={0.2}
         color="$textSecondary"
       >
         {title}

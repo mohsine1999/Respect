@@ -11,7 +11,12 @@ export function ScoreRing({ score, progress }: { score: number; progress: number
   const offset = circumference * (1 - Math.max(0, Math.min(progress, 100)) / 100);
 
   return (
-    <YStack w="$scoreRing" h="$scoreRing" ai="center" jc="center">
+    <YStack
+      w="$scoreRing"
+      h="$scoreRing"
+      ai="center"
+      jc="center"
+    >
       <Svg width={size} height={size}>
         <Circle
           cx={size / 2}
@@ -65,9 +70,9 @@ export function Metric({ value, label, detail }: { value: string | number; label
   );
 }
 
-export function Stat({ value, label }: { value: string | number; label: string }) {
+export function Stat({ value, label, minWidth }: { value: string | number; label: string; minWidth?: number }) {
   return (
-    <YStack f={1} gap="$xs" py="$sm">
+    <YStack f={1} minWidth={minWidth} gap="$xs" py="$sm">
       <Text fontSize="$title" lineHeight="$title" fw="$semibold" color="$textPrimary">
         {value}
       </Text>
@@ -87,7 +92,7 @@ export function ProgressBar({ value }: { value: number }) {
   );
 }
 
-export function TrendChart({ points }: { points: Array<{ label: string; value: number; recovery?: boolean }> }) {
+export function TrendChart({ points }: { points: { label: string; value: number; recovery?: boolean }[] }) {
   return (
     <XStack h="$scoreRing" ai="flex-end" gap="$xs" pt="$sm">
       {points.map((point, index) => {

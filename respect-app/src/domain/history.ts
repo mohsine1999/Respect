@@ -2,6 +2,16 @@ import type { Commitment, DayRecord } from './types';
 import { captureSchedule } from './scheduling';
 import { toDateKey } from '../utils/dates';
 
+export function dayRecordHasActivity(record: DayRecord | undefined): boolean {
+  return Boolean(
+    record &&
+      (record.recoveryDay ||
+        record.minimumDay ||
+        record.reflection.trim() ||
+        Object.values(record.completions).some(Boolean)),
+  );
+}
+
 export function createDayRecord(commitments: Commitment[], date: Date): DayRecord {
   return {
     date: toDateKey(date),
@@ -21,12 +31,12 @@ export function ensureDayRecord(commitments: Commitment[], date: Date, existing?
 
 export function setReflection(record: DayRecord, reflection: string): DayRecord {
   const nextReflection = reflection.trim();
-  const reflectionCommitment = record.scheduledCommitments?.find((commitment) => commitment.id === 'reflection');
+  const reflectionCommitment = record.scheduledCommitments?.find((commitment) => commitment.kind === 'reflection');
   return {
     ...record,
     reflection: nextReflection,
     completions: reflectionCommitment
-      ? { ...record.completions, reflection: Boolean(nextReflection) }
+      ? { ...record.completions, [reflectionCommitment.id]: Boolean(nextReflection) }
       : record.completions,
   };
 }

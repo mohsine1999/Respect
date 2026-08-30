@@ -31,10 +31,6 @@ export function formatLongDate(date: Date): string {
   return new Intl.DateTimeFormat('en', { weekday: 'long', day: 'numeric', month: 'long' }).format(date);
 }
 
-export function formatMonthYear(date: Date): string {
-  return new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric' }).format(date);
-}
-
 export function formatShortDate(date: Date): string {
   return new Intl.DateTimeFormat('en', { weekday: 'short', day: 'numeric' }).format(date);
 }

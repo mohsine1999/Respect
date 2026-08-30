@@ -10,11 +10,22 @@ export function dayContinuesStreak(
   record: DayRecord | undefined,
   strongThreshold: number,
 ): boolean {
-  if (record?.recoveryDay) return true;
+  return streakDayStatus(commitments, date, record, strongThreshold) === 'continues';
+}
+
+type StreakDayStatus = 'continues' | 'breaks' | 'neutral';
+
+function streakDayStatus(
+  commitments: Commitment[],
+  date: Date,
+  record: DayRecord | undefined,
+  strongThreshold: number,
+): StreakDayStatus {
+  if (record?.recoveryDay) return 'continues';
   const schedule = resolveDaySchedule(commitments, date, record);
-  if (!schedule.length) return false;
-  if (minimumDayIsSatisfied(record, schedule)) return true;
-  return calculateDailyScore(commitments, date, record) >= strongThreshold;
+  if (!schedule.length) return 'neutral';
+  if (minimumDayIsSatisfied(record, schedule)) return 'continues';
+  return calculateDailyScore(commitments, date, record) >= strongThreshold ? 'continues' : 'breaks';
 }
 
 export function calculateStreak(
@@ -24,11 +35,19 @@ export function calculateStreak(
   strongThreshold: number,
 ): number {
   let streak = 0;
+  let scannedDays = 0;
   let current = new Date(anchorDate);
-  while (streak <= 3660) {
+  let anchorIsOpen = true;
+  while (scannedDays <= 3660) {
     const record = records[toDateKey(current)];
-    if (!dayContinuesStreak(commitments, current, record, strongThreshold)) break;
-    streak += 1;
+    const status = streakDayStatus(commitments, current, record, strongThreshold);
+    if (status === 'breaks') {
+      if (!anchorIsOpen) break;
+    } else if (status === 'continues') {
+      streak += 1;
+    }
+    anchorIsOpen = false;
+    scannedDays += 1;
     current = addDays(current, -1);
   }
   return streak;
@@ -50,10 +69,11 @@ export function calculateBestStreak(
   let best = 0;
   while (current <= end) {
     const record = records[toDateKey(current)];
-    if (dayContinuesStreak(commitments, current, record, strongThreshold)) {
+    const status = streakDayStatus(commitments, current, record, strongThreshold);
+    if (status === 'continues') {
       running += 1;
       best = Math.max(best, running);
-    } else {
+    } else if (status === 'breaks') {
       running = 0;
     }
     current = addDays(current, 1);

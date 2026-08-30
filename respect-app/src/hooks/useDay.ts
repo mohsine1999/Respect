@@ -14,6 +14,10 @@ export function useDay(dateKey: string) {
     const score = calculateDailyScore(state.commitments, date, record);
     const possible = calculatePossiblePoints(state.commitments, date, record);
     const completed = schedule.filter((commitment) => record?.completions[commitment.id]).length;
+    const required = schedule.filter((commitment) => commitment.required).length;
+    const remaining = schedule.filter(
+      (commitment) => commitment.required && !record?.completions[commitment.id],
+    ).length;
     return {
       date,
       record,
@@ -21,8 +25,13 @@ export function useDay(dateKey: string) {
       score,
       possible,
       completed,
-      remaining: Math.max(schedule.length - completed, 0),
-      progress: possible ? Math.min((score / possible) * 100, 100) : 0,
+      required,
+      remaining,
+      planComplete:
+        schedule.length > 0 &&
+        remaining === 0 &&
+        (required > 0 || completed === schedule.length),
+      progress: score,
       message: record?.recoveryDay ? 'Recovery day.' : getScoreMessage(score),
       minimumSatisfied: minimumDayIsSatisfied(record, schedule),
     };

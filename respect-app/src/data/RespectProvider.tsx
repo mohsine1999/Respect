@@ -1,6 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { Commitment, PersistedRespectState, RespectSettings } from '../domain/types';
-import { createCommitment, removeCommitment, updateCommitment } from '../domain/commitments';
+import { createCommitment, createStarterCommitments, removeCommitment, updateCommitment } from '../domain/commitments';
 import { ensureDayRecord, setCompleted, setMinimumDay, setRecoveryDay, setReflection } from '../domain/history';
 import { fromDateKey } from '../utils/dates';
 import { clearPersistedState, readPersistedState, writePersistedState } from './storage';
@@ -16,6 +16,9 @@ interface RespectContextValue {
   saveCommitment: (commitment: Commitment) => void;
   addCommitment: (input: Parameters<typeof createCommitment>[0]) => void;
   deleteCommitment: (commitmentId: string) => void;
+  completeOnboarding: (input: { displayName: string; commitmentIds: string[] }) => void;
+  updateProfile: (profile: Partial<PersistedRespectState['profile']>) => void;
+  markPlanCoachmarkSeen: () => void;
   updateSettings: (settings: Partial<RespectSettings>) => void;
   resetAll: () => Promise<void>;
 }
@@ -25,6 +28,7 @@ const RespectContext = createContext<RespectContextValue | null>(null);
 export function RespectProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PersistedRespectState>(createDefaultState);
   const [hydrated, setHydrated] = useState(false);
+  const writeQueue = useRef(Promise.resolve());
 
   useEffect(() => {
     let active = true;
@@ -40,7 +44,12 @@ export function RespectProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (hydrated) writePersistedState(state).catch((error) => console.warn('Respect could not save state.', error));
+    if (hydrated) {
+      writeQueue.current = writeQueue.current
+        .catch(() => undefined)
+        .then(() => writePersistedState(state))
+        .catch((error) => console.warn('Respect could not save state.', error));
+    }
   }, [hydrated, state]);
 
   const updateDay = useCallback(
@@ -73,6 +82,27 @@ export function RespectProvider({ children }: { children: ReactNode }) {
         setState((current) => ({ ...current, commitments: [...current.commitments, createCommitment(input)] })),
       deleteCommitment: (commitmentId) =>
         setState((current) => ({ ...current, commitments: removeCommitment(current.commitments, commitmentId) })),
+      completeOnboarding: ({ displayName, commitmentIds }) =>
+        setState((current) => ({
+          ...current,
+          commitments: createStarterCommitments(commitmentIds),
+          profile: {
+            ...current.profile,
+            displayName: displayName.trim(),
+            onboardingCompleted: true,
+            onboardingVersion: 1,
+            onboardingCompletedAt: new Date().toISOString(),
+            planCoachmarkSeen: false,
+            gettingStartedDismissed: false,
+          },
+        })),
+      updateProfile: (profile) =>
+        setState((current) => ({ ...current, profile: { ...current.profile, ...profile } })),
+      markPlanCoachmarkSeen: () =>
+        setState((current) => ({
+          ...current,
+          profile: { ...current.profile, planCoachmarkSeen: true },
+        })),
       updateSettings: (settings) =>
         setState((current) => ({ ...current, settings: { ...current.settings, ...settings } })),
       resetAll: async () => {

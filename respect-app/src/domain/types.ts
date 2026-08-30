@@ -1,8 +1,10 @@
 export type WeekdayKey = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-export type ThemePreference = 'light' | 'dark';
+export type ThemePreference = 'system' | 'light' | 'dark';
+export type CommitmentKind = 'standard' | 'reflection';
 
 export interface Commitment {
   id: string;
+  kind: CommitmentKind;
   title: string;
   description: string;
   points: number;
@@ -17,6 +19,7 @@ export interface Commitment {
 
 export interface CommitmentSnapshot {
   id: string;
+  kind: CommitmentKind;
   title: string;
   description: string;
   points: number;
@@ -42,8 +45,18 @@ export interface RespectSettings {
   minimumDayEnabled: boolean;
 }
 
+export interface RespectProfile {
+  displayName: string;
+  onboardingCompleted: boolean;
+  onboardingVersion: number;
+  onboardingCompletedAt?: string;
+  planCoachmarkSeen: boolean;
+  gettingStartedDismissed: boolean;
+}
+
 export interface PersistedRespectState {
-  version: 2;
+  version: 3;
+  profile: RespectProfile;
   commitments: Commitment[];
   records: Record<string, DayRecord>;
   settings: RespectSettings;

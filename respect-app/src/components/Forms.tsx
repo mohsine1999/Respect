@@ -1,6 +1,9 @@
-import type { ComponentProps, ReactNode } from 'react';
-import { Button, Input, ScrollView, Sheet, Text, TextArea, XStack, YStack } from 'tamagui';
-import { ChevronRightIcon } from './Icons';
+import { useEffect, type ComponentProps, type ReactNode } from 'react';
+import { BackHandler } from 'react-native';
+import { Button, Input, Sheet, Text, TextArea, XStack, YStack } from 'tamagui';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { IconButton } from './Actions';
+import { ChevronRightIcon, XIcon } from './Icons';
 
 export function ModalSheet({
   open,
@@ -13,17 +16,51 @@ export function ModalSheet({
   title: string;
   children: ReactNode;
 }) {
+  const insets = useSafeAreaInsets();
+  useEffect(() => {
+    if (!open) return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      onOpenChange(false);
+      return true;
+    });
+    return () => subscription.remove();
+  }, [onOpenChange, open]);
+
   return (
-    <Sheet modal open={open} onOpenChange={onOpenChange} snapPoints={[88]} dismissOnSnapToBottom>
+    <Sheet
+      modal
+      open={open}
+      onOpenChange={onOpenChange}
+      snapPoints={[90]}
+      dismissOnSnapToBottom
+      moveOnKeyboardChange
+      zIndex={100_000}
+    >
       <Sheet.Overlay bg="$overlay" />
       <Sheet.Handle bg="$border" />
-      <Sheet.Frame bg="$surfaceElevated" br="$xl" px="$lg" pt="$xl" pb="$3xl">
-        <Text fontSize="$title" fw="$semibold" color="$textPrimary" mb="$lg">
-          {title}
-        </Text>
-        <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <Sheet.Frame
+        width="100%"
+        maxWidth={720}
+        alignSelf="center"
+        bg="$surfaceElevated"
+        br="$xl"
+        px="$lg"
+        pt="$xl"
+        pb={Math.max(insets.bottom, 24)}
+      >
+        <XStack ai="center" jc="space-between" gap="$md" mb="$lg">
+          <Text accessibilityRole="header" f={1} fontSize="$title" fw="$semibold" color="$textPrimary">
+            {title}
+          </Text>
+          <IconButton
+            label={`Close ${title}`}
+            icon={<XIcon size={18} color="$textSecondary" />}
+            onPress={() => onOpenChange(false)}
+          />
+        </XStack>
+        <Sheet.ScrollView f={1} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           {children}
-        </ScrollView>
+        </Sheet.ScrollView>
       </Sheet.Frame>
     </Sheet>
   );

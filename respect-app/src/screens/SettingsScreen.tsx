@@ -3,53 +3,86 @@ import { Alert } from 'react-native';
 import { Switch, Text, XStack, YStack } from 'tamagui';
 import {
   Chip,
+  FormField,
+  IconButton,
+  ModalSheet,
+  PrimaryButton,
   RespectScreen,
   ScreenHeader,
   SectionHeader,
   SettingRow,
   StatusBadge,
 } from '../components';
+import { ArrowLeftIcon } from '../components/Icons';
 import { useRespect } from '../data/RespectProvider';
 import { exportRespectBackup } from '../data/backup';
 
-export function SettingsScreen({ onOpenPlan }: { onOpenPlan: () => void }) {
-  const { state, updateSettings, resetAll } = useRespect();
+export function SettingsScreen({ onBack, onOpenPlan }: { onBack: () => void; onOpenPlan: () => void }) {
+  const { state, updateProfile, updateSettings, resetAll } = useRespect();
   const [exporting, setExporting] = useState(false);
+  const [nameOpen, setNameOpen] = useState(false);
+  const [nameDraft, setNameDraft] = useState(state.profile.displayName);
 
   const exportData = async () => {
     try {
       setExporting(true);
       const uri = await exportRespectBackup(state);
-      Alert.alert('Export ready', `A complete local backup was created.\n\n${uri}`);
+      Alert.alert('Export ready', `Your Respect data is ready to share.\n\n${uri}`);
     } catch {
-      Alert.alert('Export failed', 'Respect could not create the backup file.');
+      Alert.alert('Export failed', 'Respect could not create the export file.');
     } finally {
       setExporting(false);
     }
   };
 
   const confirmReset = () => {
-    Alert.alert('Reset all Respect data?', 'This clears the plan, check-ins, reflections, and settings on this device.', [
+    Alert.alert('Start over?', 'This clears your plan, check-ins, notes, and preferences on this device.', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Reset', style: 'destructive', onPress: () => void resetAll() },
+      { text: 'Start over', style: 'destructive', onPress: () => void resetAll() },
     ]);
   };
 
+  const saveName = () => {
+    updateProfile({ displayName: nameDraft.trim() });
+    setNameOpen(false);
+  };
+
   const settingSwitch = (checked: boolean, onCheckedChange: (checked: boolean) => void) => (
-    <Switch checked={checked} onCheckedChange={onCheckedChange} size="$sm" bg={checked ? '$accent' : '$surfacePressed'}>
+    <Switch
+      checked={checked}
+      onCheckedChange={onCheckedChange}
+      size="$sm"
+      bg={checked ? '$accent' : '$surfacePressed'}
+      accessibilityRole="switch"
+    >
       <Switch.Thumb bg="$surfaceElevated" />
     </Switch>
   );
 
   return (
     <RespectScreen>
-      <ScreenHeader eyebrow="Local, private, yours" title="Settings" />
+      <ScreenHeader
+        eyebrow="Private by design"
+        title="Settings"
+        leading={
+          <IconButton label="Back" icon={<ArrowLeftIcon size={20} color="$textSecondary" />} onPress={onBack} />
+        }
+      />
 
       <YStack gap="$sm">
-        <SectionHeader title="Plan" />
+        <SectionHeader title="You" />
+        <SettingRow
+          label="Name"
+          detail="Used only for your greeting on this device."
+          value={state.profile.displayName || 'Not set'}
+          onPress={() => {
+            setNameDraft(state.profile.displayName);
+            setNameOpen(true);
+          }}
+        />
         <SettingRow
           label="My plan"
-          detail={`${state.commitments.length} commitments · historical days stay fixed`}
+          detail={`${state.commitments.length} promises · tap any one to edit`}
           onPress={onOpenPlan}
         />
       </YStack>
@@ -57,13 +90,13 @@ export function SettingsScreen({ onOpenPlan }: { onOpenPlan: () => void }) {
       <YStack gap="$md">
         <SectionHeader title="Scoring" />
         <Text fontSize="$body" color="$textSecondary">
-          A strong day begins at this score.
+          A strong day begins at this percentage. Importance weights are normalized automatically.
         </Text>
-        <XStack gap="$sm">
+        <XStack flexWrap="wrap" gap="$sm">
           {[60, 70, 80, 90].map((threshold) => (
             <Chip
               key={threshold}
-              label={String(threshold)}
+              label={`${threshold}%`}
               selected={state.settings.strongDayThreshold === threshold}
               onPress={() => updateSettings({ strongDayThreshold: threshold })}
             />
@@ -71,43 +104,76 @@ export function SettingsScreen({ onOpenPlan }: { onOpenPlan: () => void }) {
         </XStack>
         <SettingRow
           label="Minimum-day mode"
-          detail="Required minimum versions can protect a streak."
-          control={settingSwitch(state.settings.minimumDayEnabled, (minimumDayEnabled) => updateSettings({ minimumDayEnabled }))}
+          detail="Lets a smaller honest version protect your rhythm."
+          control={settingSwitch(state.settings.minimumDayEnabled, (minimumDayEnabled) =>
+            updateSettings({ minimumDayEnabled }),
+          )}
         />
       </YStack>
 
       <YStack gap="$md">
         <SectionHeader title="Appearance" />
-        <XStack gap="$sm">
-          <Chip label="Light" selected={state.settings.theme === 'light'} onPress={() => updateSettings({ theme: 'light' })} />
-          <Chip label="Dark" selected={state.settings.theme === 'dark'} onPress={() => updateSettings({ theme: 'dark' })} />
+        <XStack flexWrap="wrap" gap="$sm">
+          <Chip
+            label="System"
+            selected={state.settings.theme === 'system'}
+            onPress={() => updateSettings({ theme: 'system' })}
+          />
+          <Chip
+            label="Light"
+            selected={state.settings.theme === 'light'}
+            onPress={() => updateSettings({ theme: 'light' })}
+          />
+          <Chip
+            label="Dark"
+            selected={state.settings.theme === 'dark'}
+            onPress={() => updateSettings({ theme: 'dark' })}
+          />
         </XStack>
       </YStack>
 
       <YStack gap="$sm">
-        <SectionHeader title="Notifications" />
+        <SectionHeader title="Reminders" />
         <SettingRow
-          label="Daily prompt"
-          detail="Remember a deliberate check-in each day."
-          control={settingSwitch(state.settings.notifications, (notifications) => updateSettings({ notifications }))}
+          label="Daily reminder"
+          detail="Coming later. Respect does not request notification permission yet."
+          value="Not enabled"
         />
       </YStack>
 
       <YStack gap="$sm">
-        <SectionHeader title="Data" />
+        <SectionHeader title="Your data" />
         <SettingRow
-          label={exporting ? 'Preparing export…' : 'Export backup'}
-          detail="JSON with plan, history, reflections, and settings."
+          label={exporting ? 'Preparing export…' : 'Export my data'}
+          detail="A local JSON copy of your plan, history, notes, and settings."
           onPress={exporting ? undefined : () => void exportData()}
         />
-        <SettingRow label="Reset everything" detail="Return to the original six-part plan." onPress={confirmReset} danger />
+        <SettingRow label="Start over" detail="Clear this device and return to welcome." onPress={confirmReset} danger />
       </YStack>
 
       <YStack gap="$sm">
         <SectionHeader title="About" />
-        <SettingRow label="Respect" detail="A private operating system for keeping your own word." value="1.0.1" />
-        <StatusBadge label="Offline first" tone="success" />
+        <SettingRow label="Respect" detail="A calm daily practice for keeping your own word." value="1.1.0" />
+        <XStack flexWrap="wrap" gap="$xl" pt="$sm">
+          <StatusBadge label="Offline first" tone="success" />
+          <StatusBadge label="No account" tone="success" />
+          <StatusBadge label="Ads disabled" />
+        </XStack>
       </YStack>
+
+      <ModalSheet open={nameOpen} onOpenChange={setNameOpen} title="Your name">
+        <YStack gap="$xl" pb="$3xl">
+          <FormField
+            label="Name"
+            value={nameDraft}
+            onChangeText={setNameDraft}
+            maxLength={32}
+            autoCapitalize="words"
+            placeholder="Your first name"
+          />
+          <PrimaryButton onPress={saveName}>Save name</PrimaryButton>
+        </YStack>
+      </ModalSheet>
     </RespectScreen>
   );
 }

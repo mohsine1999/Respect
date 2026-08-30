@@ -12,6 +12,7 @@ export function getScheduledCommitments(commitments: Commitment[], date: Date): 
 export function toSnapshot(commitment: Commitment): CommitmentSnapshot {
   return {
     id: commitment.id,
+    kind: commitment.kind,
     title: commitment.title,
     description: commitment.description,
     points: commitment.points,

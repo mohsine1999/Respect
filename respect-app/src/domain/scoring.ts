@@ -6,10 +6,17 @@ export function calculateDailyScore(
   date: Date,
   dayRecord?: DayRecord | null,
 ): number {
-  return resolveDaySchedule(commitments, date, dayRecord).reduce(
+  const schedule = resolveDaySchedule(commitments, date, dayRecord);
+  const scoredSchedule = schedule.filter(
+    (commitment) => commitment.required || Boolean(dayRecord?.completions[commitment.id]),
+  );
+  const possible = scoredSchedule.reduce((total, commitment) => total + commitment.points, 0);
+  if (!possible) return 0;
+  const earned = scoredSchedule.reduce(
     (total, commitment) => total + (dayRecord?.completions[commitment.id] ? commitment.points : 0),
     0,
   );
+  return Math.round((earned / possible) * 100);
 }
 
 export function calculatePossiblePoints(
@@ -17,10 +24,12 @@ export function calculatePossiblePoints(
   date: Date,
   dayRecord?: DayRecord | null,
 ): number {
-  return resolveDaySchedule(commitments, date, dayRecord).reduce(
-    (total, commitment) => total + commitment.points,
-    0,
-  );
+  return resolveDaySchedule(commitments, date, dayRecord)
+    .filter((commitment) => commitment.required || Boolean(dayRecord?.completions[commitment.id]))
+    .reduce(
+      (total, commitment) => total + commitment.points,
+      0,
+    );
 }
 
 export function isStrongDay(score: number, strongThreshold: number): boolean {

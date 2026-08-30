@@ -4,6 +4,7 @@ import { fromDateKey, WEEKDAY_LABELS } from '../utils/dates';
 export function DayCell({
   dateKey,
   score,
+  recorded,
   recovery,
   selected,
   threshold,
@@ -11,6 +12,7 @@ export function DayCell({
 }: {
   dateKey: string;
   score: number;
+  recorded?: boolean;
   recovery?: boolean;
   selected?: boolean;
   threshold: number;
@@ -19,8 +21,19 @@ export function DayCell({
   const date = fromDateKey(dateKey);
   const weekday = (date.getDay() + 6) % 7;
   const tone = recovery ? '$warning' : score >= threshold ? '$success' : score > 0 ? '$accent' : '$border';
+  const dateLabel = new Intl.DateTimeFormat('en', { weekday: 'long', day: 'numeric', month: 'long' }).format(date);
+  const resultLabel = recovery ? 'Recovery day' : recorded ? `Checked in, score ${score}` : 'No check-in';
   return (
-    <Button unstyled f={1} ai="center" onPress={onPress} pressStyle={{ opacity: 0.7 }}>
+    <Button
+      unstyled
+      f={1}
+      ai="center"
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${dateLabel}. ${resultLabel}`}
+      accessibilityState={{ selected: Boolean(selected) }}
+      pressStyle={{ opacity: 0.7 }}
+    >
       <YStack ai="center" gap="$sm" py="$sm">
         <Text fontSize="$caption" color="$textMuted">
           {WEEKDAY_LABELS[weekday]}
@@ -35,7 +48,7 @@ export function DayCell({
           bc={selected ? '$accent' : '$border'}
           bw={1}
         >
-          <Text fontSize="$label" fw="$medium" color={selected ? '$background' : '$textPrimary'}>
+          <Text fontSize="$label" fw="$medium" color={selected ? '$accentContrast' : '$textPrimary'}>
             {date.getDate()}
           </Text>
         </YStack>
@@ -53,7 +66,7 @@ export function Calendar({
   onSelect,
 }: {
   dates: string[];
-  scores: Record<string, { score: number; recovery?: boolean }>;
+  scores: Record<string, { score: number; recorded?: boolean; recovery?: boolean }>;
   selected?: string;
   threshold: number;
   onSelect: (date: string) => void;
@@ -68,6 +81,7 @@ export function Calendar({
               key={date}
               dateKey={date}
               score={scores[date]?.score ?? 0}
+              recorded={scores[date]?.recorded}
               recovery={scores[date]?.recovery}
               selected={selected === date}
               threshold={threshold}

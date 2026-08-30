@@ -17,9 +17,9 @@ export function PrimaryButton({ children, onPress, disabled }: ActionProps) {
       opacity={disabled ? 0.5 : 1}
       disabled={disabled}
       onPress={onPress}
-      pressStyle={{ backgroundColor: '$surfacePressed', scale: 0.99 }}
+      pressStyle={{ opacity: 0.86, scale: 0.99 }}
     >
-      <Text fontSize="$bodyStrong" fw="$semibold" color="$background">
+      <Text fontSize="$bodyStrong" fw="$semibold" color="$accentContrast">
         {children}
       </Text>
     </Button>
@@ -78,12 +78,17 @@ export function Chip({
     <Button
       unstyled
       onPress={onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityState={onPress ? { selected } : undefined}
       br="$sm"
       bg={selected ? '$accentSoft' : '$surface'}
       bc={selected ? '$accent' : '$border'}
       bw={1}
       px="$md"
       py="$sm"
+      minHeight={44}
+      ai="center"
+      jc="center"
       pressStyle={{ backgroundColor: '$surfacePressed' }}
     >
       <Text fontSize="$label" fw="$medium" color={selected ? '$accent' : '$textSecondary'}>

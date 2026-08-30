@@ -1,6 +1,6 @@
 # Respect
 
-Respect is an offline-first React Native application built with Expo 57, TypeScript, and Tamagui. Its five-tab shell is local React Native state, so the app does not carry an additional native navigation runtime. This is the repository's only application implementation.
+Respect is an offline-first React Native application built with Expo 57, TypeScript, and Tamagui. A short, personalized welcome builds a starter plan, then a focused three-tab shell keeps Today, Progress, and Plan easy to find. The local cross-platform shell avoids an additional native navigation runtime while preserving each tab's state.
 
 Use Node 22 LTS (22.13 or newer). Node 23 is not supported by React Native 0.86.
 
@@ -45,4 +45,16 @@ The EAS APK is ARM64-only and enables JavaScript/native-library compression, R8 
 
 ## Data model
 
-AsyncStorage persists commitments, weekday schedules, scoring settings, check-ins, reflections, recovery/minimum days, theme preferences, and immutable historical plan snapshots. Export creates a complete local JSON backup through the native share sheet.
+AsyncStorage persists onboarding/profile state, commitments, weekday schedules, scoring settings, check-ins, reflections, recovery/minimum days, theme preferences, and immutable historical plan snapshots. Scores are normalized to 0–100, so custom plan weights stay meaningful, scheduled off-days remain neutral, and recovery days do not lower averages. The v3 upgrade preserves old plan snapshots but intentionally recalculates their derived score under the normalized model. Export creates a complete local JSON copy through the native share sheet.
+
+## Monetization boundary
+
+`src/monetization` contains a disabled, no-op ad adapter and a single responsive `AdSlot` entry point. Respect ships without an ad SDK, ad identifiers, consent prompts, or reserved empty space. A future Android/iOS provider can be injected behind this boundary only after consent, privacy disclosures, test IDs, valid platform app IDs, and at least three meaningful check-in days are configured. Ads are intentionally excluded from onboarding, Today check-ins, Plan editing, and Settings. See `src/monetization/README.md` for the integration contract.
+
+## iOS readiness
+
+The interface uses safe-area insets, system appearance, keyboard-aware sheets, responsive max-width content, rotation-friendly layout, reduced-motion-aware onboarding, and platform-neutral APIs. A future simulator build can be started with:
+
+```sh
+eas build --platform ios --profile ios-simulator
+```
