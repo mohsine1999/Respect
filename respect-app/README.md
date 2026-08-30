@@ -1,6 +1,6 @@
 # Respect
 
-Respect is now an offline-first React Native application built with Expo 57, TypeScript, Tamagui, and React Navigation. The former Java Android application remains in `../respect-android` only as a migration reference; it is not part of the Expo runtime or build.
+Respect is an offline-first React Native application built with Expo 57, TypeScript, and Tamagui. Its five-tab shell is local React Native state, so the app does not carry an additional native navigation runtime. This is the repository's only application implementation.
 
 Use Node 22 LTS (22.13 or newer). Node 23 is not supported by React Native 0.86.
 
@@ -32,7 +32,7 @@ npm run build:apk
 
 The artifact is written to `respect-app/android/app/build/outputs/apk/debug/app-debug.apk`. The generated `android/` folder is intentionally ignored; Expo Prebuild recreates it from `app.json`.
 
-For a signed cloud APK, install the EAS CLI, authenticate, and run:
+For a signed cloud APK targeting modern 64-bit Android devices, install the EAS CLI, authenticate, and run:
 
 ```sh
 cd respect-app
@@ -40,6 +40,8 @@ eas build --platform android --profile preview
 ```
 
 The repository workflow `.github/workflows/build-apk.yml` runs tests, generates the native Android project, builds a debug APK, and uploads it as a downloadable GitHub Actions artifact.
+
+The EAS APK is ARM64-only and enables JavaScript/native-library compression, R8 minification, optimized Android resource shrinking, and removes unused GIF/WebP decoders. Use a production Android App Bundle when distributing through Google Play so Play can deliver device-specific splits.
 
 ## Data model
 

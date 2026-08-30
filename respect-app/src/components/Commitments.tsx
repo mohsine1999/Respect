@@ -1,8 +1,8 @@
 import type { Commitment, CommitmentSnapshot } from '../domain/types';
 import { Button, Text, XStack, YStack } from 'tamagui';
-import { Check, Circle, ChevronRight } from '@tamagui/lucide-icons';
 import { scheduleLabel } from '../domain/scheduling';
 import { StatusBadge } from './Actions';
+import { CheckIcon, ChevronRightIcon, CircleIcon } from './Icons';
 
 export function CommitmentRow({
   commitment,
@@ -32,7 +32,7 @@ export function CommitmentRow({
       <XStack ai="center" gap="$md">
         {mode === 'today' || mode === 'history' ? (
           <YStack w="$icon" h="$icon" ai="center" jc="center">
-            {completed ? <Check size={20} color="$success" /> : <Circle size={20} color="$textMuted" />}
+            {completed ? <CheckIcon size={20} color="$success" /> : <CircleIcon size={20} color="$textMuted" />}
           </YStack>
         ) : null}
         <YStack f={1} gap="$xs">
@@ -62,7 +62,7 @@ export function CommitmentRow({
           <Text fontSize="$label" fw="$semibold" color={completed ? '$success' : '$accent'}>
             +{commitment.points}
           </Text>
-          {mode === 'plan' ? <ChevronRight size={16} color="$textMuted" /> : null}
+          {mode === 'plan' ? <ChevronRightIcon size={16} color="$textMuted" /> : null}
         </YStack>
       </XStack>
     </Button>

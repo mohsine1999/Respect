@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { useNavigation } from '@react-navigation/native';
 import { Switch, Text, XStack, YStack } from 'tamagui';
 import {
   Chip,
@@ -13,11 +11,9 @@ import {
 } from '../components';
 import { useRespect } from '../data/RespectProvider';
 import { exportRespectBackup } from '../data/backup';
-import type { RootTabParamList } from '../navigation/types';
 
-export function SettingsScreen() {
+export function SettingsScreen({ onOpenPlan }: { onOpenPlan: () => void }) {
   const { state, updateSettings, resetAll } = useRespect();
-  const navigation = useNavigation<BottomTabNavigationProp<RootTabParamList>>();
   const [exporting, setExporting] = useState(false);
 
   const exportData = async () => {
@@ -54,7 +50,7 @@ export function SettingsScreen() {
         <SettingRow
           label="My plan"
           detail={`${state.commitments.length} commitments · historical days stay fixed`}
-          onPress={() => navigation.navigate('Plan')}
+          onPress={onOpenPlan}
         />
       </YStack>
 
@@ -109,7 +105,7 @@ export function SettingsScreen() {
 
       <YStack gap="$sm">
         <SectionHeader title="About" />
-        <SettingRow label="Respect" detail="A private operating system for keeping your own word." value="1.0.0" />
+        <SettingRow label="Respect" detail="A private operating system for keeping your own word." value="1.0.1" />
         <StatusBadge label="Offline first" tone="success" />
       </YStack>
     </RespectScreen>

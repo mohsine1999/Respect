@@ -1,14 +1,10 @@
-import { NavigationContainer } from '@react-navigation/native';
 import { PortalProvider } from '@tamagui/portal';
 import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Spinner, styled, TamaguiProvider, Text, Theme, YStack } from 'tamagui';
+import { Spinner, TamaguiProvider, Text, Theme, YStack } from 'tamagui';
 import config from './tamagui.config';
 import { RespectProvider, useRespect } from './src/data/RespectProvider';
 import { AppNavigator } from './src/navigation/AppNavigator';
-
-const GestureRoot = styled(GestureHandlerRootView, { flex: 1 });
 
 function RespectApplication() {
   const { state, hydrated } = useRespect();
@@ -16,9 +12,7 @@ function RespectApplication() {
     <Theme name={state.settings.theme}>
       <StatusBar style={state.settings.theme === 'dark' ? 'light' : 'dark'} />
       {hydrated ? (
-        <NavigationContainer>
-          <AppNavigator />
-        </NavigationContainer>
+        <AppNavigator />
       ) : (
         <YStack f={1} ai="center" jc="center" gap="$md" bg="$background">
           <Spinner color="$accent" />
@@ -34,7 +28,7 @@ function RespectApplication() {
 export default function App() {
   return (
     <TamaguiProvider config={config} defaultTheme="light">
-      <GestureRoot>
+      <YStack f={1}>
         <SafeAreaProvider>
           <PortalProvider shouldAddRootHost>
             <RespectProvider>
@@ -42,7 +36,7 @@ export default function App() {
             </RespectProvider>
           </PortalProvider>
         </SafeAreaProvider>
-      </GestureRoot>
+      </YStack>
     </TamaguiProvider>
   );
 }

@@ -3,7 +3,7 @@
     "name": "Respect",
     "slug": "respect",
     "description": "A private operating system for keeping your own word.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "respect",
@@ -15,7 +15,7 @@
     },
     "android": {
       "package": "com.respect.app",
-      "versionCode": 2,
+      "versionCode": 3,
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
         "backgroundColor": "#F5F3EE",
@@ -29,7 +29,23 @@
     },
     "plugins": [
       "expo-system-ui",
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "buildArchs": [
+              "arm64-v8a"
+            ],
+            "enableBundleCompression": true,
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "networkInspector": false,
+            "useLegacyPackaging": true
+          }
+        }
+      ],
+      "./plugins/with-android-size-optimizations"
     ],
     "extra": {
       "eas": {

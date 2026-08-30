@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
-import { Plus } from '@tamagui/lucide-icons';
 import { Text, XStack, YStack } from 'tamagui';
 import {
   Chip,
@@ -18,6 +17,7 @@ import {
 import { useRespect } from '../data/RespectProvider';
 import type { Commitment } from '../domain/types';
 import { WEEKDAY_NAMES } from '../utils/dates';
+import { PlusIcon } from '../components/Icons';
 
 type Draft = Pick<Commitment, 'title' | 'description' | 'points' | 'category' | 'minimumTarget' | 'weekdays' | 'enabled' | 'required'>;
 
@@ -97,7 +97,7 @@ export function PlanScreen() {
       <ScreenHeader
         eyebrow="This is your operating standard"
         title="My plan"
-        action={<IconButton label="Add commitment" icon={<Plus size={20} color="$accent" />} onPress={beginAdd} />}
+        action={<IconButton label="Add commitment" icon={<PlusIcon size={20} color="$accent" />} onPress={beginAdd} />}
       />
 
       <Text fontSize="$body" color="$textSecondary">

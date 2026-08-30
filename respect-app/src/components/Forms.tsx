@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react';
 import { Button, Input, ScrollView, Sheet, Text, TextArea, XStack, YStack } from 'tamagui';
-import { ChevronRight } from '@tamagui/lucide-icons';
+import { ChevronRightIcon } from './Icons';
 
 export function ModalSheet({
   open,
@@ -117,7 +117,7 @@ export function SettingRow({
           </Text>
         ) : null}
         {control}
-        {onPress && !control ? <ChevronRight size={17} color="$textMuted" /> : null}
+        {onPress && !control ? <ChevronRightIcon size={17} color="$textMuted" /> : null}
       </XStack>
     </Button>
   );

@@ -1,7 +1,1 @@
-export type RootTabParamList = {
-  Today: undefined;
-  Plan: undefined;
-  History: undefined;
-  Dashboard: undefined;
-  Settings: undefined;
-};
+export type TabName = 'Today' | 'Plan' | 'History' | 'Dashboard' | 'Settings';
