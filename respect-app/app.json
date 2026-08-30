@@ -30,6 +30,11 @@
     "plugins": [
       "expo-system-ui",
       "expo-status-bar"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a152e911-c424-489d-a5f7-a1872c698dad"
+      }
+    }
   }
 }
